@@ -1,0 +1,16 @@
+[Unit]
+Description=TCP Server
+After=network.target
+
+[Service]
+ExecStart=/opt/bitnami/nodejs/bin/node /home/camarasayi/tcp-server/tcp-server-sack.js
+WorkingDirectory=/home/camarasayi/tcp-server/
+Restart=always
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=tcpserver
+Environment=NODE_ENV=production PORT=1337
+
+[Install]
+WantedBy=multi-user.target
