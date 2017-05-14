@@ -1,21 +1,24 @@
 /*
-    TCP Socket server
+    Simple TCP Socket server
+    Includes +SACK:GTHBD for Queclink devices
     Alvaro Zuno
     May 2017
 
-    Requires: Winston
-    npm install winston
+    Requires:
+    - Winston  -- https://github.com/winstonjs/winston
+    - Winston Loggly Bulk -- https://github.com/loggly/winston-loggly-bulk/
 */
 
 //Require net
 var net = require('net');
-
-/*  Winston logger -- https://github.com/winstonjs/winston
-    Saves to a file
+var config = require('./config.json');
+/*
+    Saves to a file using Winston
     Put timestamp on logs
 */
 'use strict';
 const winston = require('winston');
+require('winston-loggly-bulk');
 const fs = require('fs');
 const env = process.env.NODE_ENV || 'development';
 const logDir = 'logs';
@@ -26,8 +29,14 @@ if (!fs.existsSync(logDir)) {
 }
 const tsFormat = () => (new Date());
 const logger = new (winston.Logger)({
+  rewriters: [
+            (level, msg, meta) => {
+                meta.server = config.serverName;
+                return meta;
+            }
+  ],
   transports: [
-    // colorize the output to the console
+// colorize the output to the console
     new (winston.transports.Console)({
       timestamp: tsFormat,
       colorize: true,
@@ -37,7 +46,13 @@ const logger = new (winston.Logger)({
       filename: `${logDir}/server.log`,
       timestamp: tsFormat,
       level: env === 'development' ? 'debug' : 'info'
-    })
+    }),
+    new (winston.transports.Loggly)({
+      inputToken: config.logglyToken,
+      subdomain: config.logglySubdomain,
+      tags: ["Winston-NodeJS"],
+      json:true
+    }),
   ]
 });
 
@@ -45,7 +60,7 @@ const logger = new (winston.Logger)({
 var server = net.createServer();
 server.on('connection', handleConnection);
 //Listening port
-server.listen(8888, function() {
+server.listen(config.portNumber, function() {
   logger.info('TCP server listening on port %j', server.address().port);
 });
 
@@ -77,12 +92,6 @@ function handleConnection(conn) {
   else {
     logger.info('Data from %s: %j', remoteAddress, d);
   }
-
-/*Debug lines
-  console.log('Message:',message);
-  console.log('Parsed:',parsedData);
-  console.log('MessageType:',messageType);
-*/
 }
 
 //On Connection closed
