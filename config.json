@@ -1,6 +1,6 @@
 {
-    "serverName" : "MacOS-AZ",
-    "logglyToken" : "cec9e247-d2e1-40d3-8214-50453d3a0954",
-    "logglySubdomain" : "alzuno",
+    "serverName" : "MyServer",
+    "logglyToken" : "ced9e547-d2a1-40d4-8324-12345d3a6789",
+    "logglySubdomain" : "mysubdomain",
     "portNumber" : 9000
 }
